@@ -137,7 +137,7 @@ export class ShiverText {
 export function shiverText(
   element: HTMLElement | string,
   text?: string,
-  options?: ShiverTextOptions
+  options?: ShiverTextOptions,
 ): ShiverText {
   const shiverer = new ShiverText(element, options);
 

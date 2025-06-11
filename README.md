@@ -22,39 +22,39 @@ npm install shiver-text
 ### Basic Usage
 
 ```typescript
-import { shiverText } from 'shiver-text';
+import { shiverText } from "shiver-text";
 
 // Basic usage with default options
-shiverText('#my-element', 'Hello World!');
+shiverText("#my-element", "Hello World!");
 
 // Or with an element reference
-const element = document.getElementById('my-element');
-shiverText(element, 'Hello World!');
+const element = document.getElementById("my-element");
+shiverText(element, "Hello World!");
 ```
 
 ### Advanced Usage
 
 ```typescript
-import { ShiverText } from 'shiver-text';
+import { ShiverText } from "shiver-text";
 
-const element = document.querySelector('.title');
+const element = document.querySelector(".title");
 const shiverer = new ShiverText(element, {
-  duration: 80,        // Time for each character to settle (ms)
-  delay: 50,          // Delay between each character starting (ms)
-  charset: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*',
+  duration: 80, // Time for each character to settle (ms)
+  delay: 50, // Delay between each character starting (ms)
+  charset: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*",
   onComplete: () => {
-    console.log('Animation complete!');
+    console.log("Animation complete!");
   },
   onUpdate: (currentText) => {
-    console.log('Current text:', currentText);
-  }
+    console.log("Current text:", currentText);
+  },
 });
 
 // Start the animation
 shiverer.start();
 
 // Change text and animate
-shiverer.setText('New text to animate');
+shiverer.setText("New text to animate");
 
 // Stop animation
 shiverer.stop();
@@ -67,6 +67,7 @@ shiverer.stop();
 Convenience function to create and start a shiver animation.
 
 **Parameters:**
+
 - `element: HTMLElement | string` - DOM element or selector
 - `text: string` (optional) - Text to animate to
 - `options: ShiverTextOptions` (optional) - Animation options
@@ -78,6 +79,7 @@ Convenience function to create and start a shiver animation.
 Create a new ShiverText instance.
 
 **Parameters:**
+
 - `element`: `HTMLElement | string` - DOM element or selector
 - `options`: `ShiverTextOptions` (optional) - Animation options
 
@@ -87,16 +89,16 @@ Create a new ShiverText instance.
 interface ShiverTextOptions {
   /** Duration for each character to settle (ms) - default: 60 */
   duration?: number;
-  
+
   /** Characters to use for shuffling - default: alphanumeric + symbols */
   charset?: string;
-  
+
   /** Delay between each character starting (ms) - default: 40 */
   delay?: number;
-  
+
   /** Callback when animation completes */
   onComplete?: () => void;
-  
+
   /** Callback on each frame update */
   onUpdate?: (text: string) => void;
 }
@@ -113,8 +115,8 @@ interface ShiverTextOptions {
 ### React Component
 
 ```tsx
-import React, { useEffect, useRef } from 'react';
-import { ShiverText } from '@yourusername/shiver-text';
+import React, { useEffect, useRef } from "react";
+import { ShiverText } from "@yourusername/shiver-text";
 
 const ShiverTextComponent: React.FC<{ text: string }> = ({ text }) => {
   const elementRef = useRef<HTMLDivElement>(null);
@@ -151,8 +153,8 @@ const ShiverTextComponent: React.FC<{ text: string }> = ({ text }) => {
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
-import { ShiverText } from '@yourusername/shiver-text';
+import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ShiverText } from "@yourusername/shiver-text";
 
 interface Props {
   text: string;
@@ -173,9 +175,12 @@ onUnmounted(() => {
   shiverer?.stop();
 });
 
-watch(() => props.text, (newText) => {
-  shiverer?.setText(newText);
-});
+watch(
+  () => props.text,
+  (newText) => {
+    shiverer?.setText(newText);
+  },
+);
 </script>
 ```
 
@@ -183,7 +188,7 @@ watch(() => props.text, (newText) => {
 
 ```css
 .shiver-text {
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 2rem;
   font-weight: bold;
   color: #00ff00;
