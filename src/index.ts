@@ -1,88 +1,155 @@
-export default class ShiverText {
-  /**
-   * The characters used to produce the effect.
-   *
-   * @memberof ShiverText
-   */
-  public randomCharacters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890█+÷~.–<>/\\{}';
+export interface ShiverTextOptions {
+  /** Duration for each character to settle (ms) */
+  duration?: number;
+  /** Characters to use for shuffling */
+  charset?: string;
+  /** Delay between each character starting (ms) */
+  delay?: number;
+  /** Callback when animation completes */
+  onComplete?: () => void;
+  /** Callback on each frame update */
+  onUpdate?: (text: string) => void;
+}
 
-  /**
-   * The element that contains the text to be animated.
-   *
-   * @private
-   * @type {HTMLElement}
-   * @memberof ShiverText
-   */
+export class ShiverText {
   private element: HTMLElement;
+  private originalText: string;
+  private options: Required<ShiverTextOptions>;
+  private animationId: number | null = null;
+  private startTime: number = 0;
+  private isAnimating: boolean = false;
+
+  constructor(element: HTMLElement | string, options: ShiverTextOptions = {}) {
+    this.element =
+      typeof element === "string"
+        ? (document.querySelector(element) as HTMLElement)
+        : element;
+
+    if (!this.element) {
+      throw new Error("Element not found");
+    }
+
+    this.originalText = this.element.textContent || "";
+    this.options = {
+      duration: 60,
+      charset:
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?",
+      delay: 40,
+      onComplete: () => {},
+      onUpdate: () => {},
+      ...options,
+    };
+  }
 
   /**
-   * The array that stores the text separated by lines as it appears
-   * on the screen.
-   *
-   * @private
-   * @type {string[]}
-   * @memberof ShiverText
+   * Start the shuffle animation
    */
-  private textLines: string[] = [];
-
-  private timeStart = 0;
-  private requestAnimationFrameId = 0;
-
-  constructor(element: HTMLElement) {
-    this.element = element;
-    this.setTextLines(element.childNodes[0]);
-  }
-
-  public start(): void {
-    this.requestAnimationFrameId = window.requestAnimationFrame(this.step.bind(this));
-  }
-
-  private setTextLines(node: Node): void {
-    if (!node || !node.parentNode || node.nodeType !== Node.TEXT_NODE) {
-      return;
+  start(): void {
+    if (this.isAnimating) {
+      this.stop();
     }
 
-    const range = document.createRange();
-    range.setStart(node, 0);
-    let prevBottom = range.getBoundingClientRect().bottom;
-    const str = node.textContent ?? '';
-    let current = 1; // we already got index 0
-    let lastFound = 0;
-    let bottom = 0;
+    this.isAnimating = true;
+    this.startTime = performance.now();
+    this.animate();
+  }
 
-    console.log('prevBottom:', prevBottom);
-    // iterate over all characters
-    while (current <= str.length) {
-      // move our cursor
-      range.setStart(node, current);
-      if (current < str.length - 1) {
-        range.setEnd(node, current + 1);
+  /**
+   * Stop the animation
+   */
+  stop(): void {
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+    this.isAnimating = false;
+  }
+
+  /**
+   * Set new text and optionally start animation
+   */
+  setText(text: string, autoStart: boolean = true): void {
+    this.originalText = text;
+    if (autoStart) {
+      this.start();
+    }
+  }
+
+  /**
+   * Get a random character from the charset
+   */
+  private getRandomChar(): string {
+    return this.options.charset[
+      Math.floor(Math.random() * this.options.charset.length)
+    ];
+  }
+
+  /**
+   * Main animation loop
+   */
+  private animate = (): void => {
+    if (!this.isAnimating) return;
+
+    const currentTime = performance.now();
+    const elapsed = currentTime - this.startTime;
+
+    let displayText = "";
+    let allComplete = true;
+
+    for (let i = 0; i < this.originalText.length; i++) {
+      const char = this.originalText[i];
+
+      // Skip spaces - they appear immediately
+      if (char === " ") {
+        displayText += " ";
+        continue;
       }
-      bottom = range.getBoundingClientRect().bottom;
-      if (bottom > prevBottom) {
-        // line break
-        this.textLines.push(str.substr(lastFound, current - lastFound));
-        prevBottom = bottom;
-        lastFound = current;
+
+      const charStartTime = i * this.options.delay;
+      const charElapsed = Math.max(0, elapsed - charStartTime);
+
+      if (charElapsed >= this.options.duration) {
+        // Character is complete
+        displayText += char;
+      } else if (charElapsed > 0) {
+        // Character is animating
+        displayText += this.getRandomChar();
+        allComplete = false;
+      } else {
+        // Character hasn't started yet
+        displayText += this.getRandomChar();
+        allComplete = false;
       }
-      current++;
     }
-    // push the last line
-    this.textLines.push(str.substr(lastFound));
+
+    // Update the element
+    this.element.textContent = displayText;
+    this.options.onUpdate(displayText);
+
+    if (allComplete) {
+      this.isAnimating = false;
+      this.options.onComplete();
+    } else {
+      this.animationId = requestAnimationFrame(this.animate);
+    }
+  };
+}
+
+/**
+ * Convenience function to create and start a shiver effect
+ */
+export function shiverText(
+  element: HTMLElement | string,
+  text?: string,
+  options?: ShiverTextOptions
+): ShiverText {
+  const shiverer = new ShiverText(element, options);
+
+  if (text) {
+    shiverer.setText(text);
+  } else {
+    shiverer.start();
   }
 
-  private step(timeStamp: DOMHighResTimeStamp): void {
-    if (this.timeStart === 0) {
-      this.timeStart = timeStamp;
-    }
-    const timeElapsed = timeStamp - this.timeStart;
-
-    // `Math.min()` is used here to make sure that the element stops at exactly 200px.
-    this.element.style.transform = 'translateX(' + Math.min(0.1 * timeElapsed, 200) + 'px)';
-
-    // Stop the animation after 2 seconds
-    if (timeElapsed < 2000) {
-      this.requestAnimationFrameId = window.requestAnimationFrame(this.step.bind(this));
-    }
-  }
+  return shiverer;
 }
