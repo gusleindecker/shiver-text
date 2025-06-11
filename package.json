@@ -15,7 +15,7 @@
     "test": "jest",
     "prepublishOnly": "npm run build",
     "lint": "eslint src --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write ."
   },
   "keywords": [
     "text",

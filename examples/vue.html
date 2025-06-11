@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shiver Text - Vue Example</title>
+  </head>
+  <body>
+    <div id="app">
+      <div ref="textElement">{{ message }}</div>
+    </div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+      class ShiverText {
+        constructor(element, options = {}) {
+          console.log("this.element:", typeof element);
+          this.element =
+            typeof element === "string"
+              ? document.querySelector(element)
+              : element;
+
+          if (!this.element) {
+            throw new Error("Element not found");
+          }
+
+          this.originalText = this.element.textContent || "";
+          this.options = {
+            duration: 60,
+            charset:
+              "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?",
+            delay: 40,
+            onComplete: () => {},
+            onUpdate: () => {},
+            ...options,
+          };
+
+          this.animationId = null;
+          this.startTime = 0;
+          this.isAnimating = false;
+        }
+
+        start() {
+          if (this.isAnimating) {
+            this.stop();
+          }
+
+          this.isAnimating = true;
+          this.startTime = performance.now();
+          this.animate();
+        }
+
+        stop() {
+          if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+          }
+          this.isAnimating = false;
+        }
+
+        setText(text, autoStart = true) {
+          this.originalText = text;
+          if (autoStart) {
+            this.start();
+          }
+        }
+
+        getRandomChar() {
+          return this.options.charset[
+            Math.floor(Math.random() * this.options.charset.length)
+          ];
+        }
+
+        animate = () => {
+          if (!this.isAnimating) return;
+
+          const currentTime = performance.now();
+          const elapsed = currentTime - this.startTime;
+
+          let displayText = "";
+          let allComplete = true;
+
+          for (let i = 0; i < this.originalText.length; i++) {
+            const char = this.originalText[i];
+
+            if (char === " ") {
+              displayText += " ";
+              continue;
+            }
+
+            const charStartTime = i * this.options.delay;
+            const charElapsed = Math.max(0, elapsed - charStartTime);
+
+            if (charElapsed >= this.options.duration) {
+              displayText += char;
+            } else {
+              displayText += this.getRandomChar();
+              allComplete = false;
+            }
+          }
+
+          this.element.textContent = displayText;
+          this.options.onUpdate(displayText);
+
+          if (allComplete) {
+            this.isAnimating = false;
+            this.options.onComplete();
+          } else {
+            this.animationId = requestAnimationFrame(this.animate);
+          }
+        };
+      }
+    </script>
+    <script>
+      const { createApp, ref, onMounted } = Vue;
+
+      createApp({
+        setup() {
+          const textElement = ref();
+          const message = ref(
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque id fermentum nisi. Suspendisse id condimentum tortor."
+          );
+
+          onMounted(() => {
+            console.log("textElement:", textElement.value);
+
+            if (textElement.value) {
+              const shiverer = new ShiverText(textElement.value, {
+                delay: 12,
+              });
+              shiverer.start();
+            }
+          });
+
+          return {
+            message,
+            textElement,
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

@@ -12,9 +12,9 @@ export interface ShiverTextOptions {
 }
 
 export class ShiverText {
-  private element: HTMLElement;
+  private readonly element: HTMLElement;
   private originalText: string;
-  private options: Required<ShiverTextOptions>;
+  private readonly options: Required<ShiverTextOptions>;
   private animationId: number | null = null;
   private startTime: number = 0;
   private isAnimating: boolean = false;
@@ -29,7 +29,7 @@ export class ShiverText {
       throw new Error("Element not found");
     }
 
-    this.originalText = this.element.textContent || "";
+    this.originalText = this.element.textContent ?? "";
     this.options = {
       duration: 60,
       charset:
@@ -87,7 +87,7 @@ export class ShiverText {
   /**
    * Main animation loop
    */
-  private animate = (): void => {
+  private animate(): void {
     if (!this.isAnimating) return;
 
     const currentTime = performance.now();
@@ -111,12 +111,8 @@ export class ShiverText {
       if (charElapsed >= this.options.duration) {
         // Character is complete
         displayText += char;
-      } else if (charElapsed > 0) {
-        // Character is animating
-        displayText += this.getRandomChar();
-        allComplete = false;
       } else {
-        // Character hasn't started yet
+        // Character is still animating or hasn't started yet
         displayText += this.getRandomChar();
         allComplete = false;
       }
@@ -132,7 +128,7 @@ export class ShiverText {
     } else {
       this.animationId = requestAnimationFrame(this.animate);
     }
-  };
+  }
 }
 
 /**
