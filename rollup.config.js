@@ -2,18 +2,26 @@ import typescript from "@rollup/plugin-typescript";
 import dts from "rollup-plugin-dts";
 
 const config = [
-  // Build the main library
   {
     input: "src/index.ts",
     output: [
       {
-        file: "dist/index.js",
+        // ES modules for browsers
+        file: "dist/index.esm.js",
+        format: "es",
+        sourcemap: true,
+      },
+      {
+        // CommonJS for Node.js
+        file: "dist/index.cjs.js",
         format: "cjs",
         sourcemap: true,
       },
       {
-        file: "dist/index.esm.js",
-        format: "esm",
+        // Universal format for browsers via script tags
+        file: "dist/index.js",
+        format: "umd",
+        name: "ShiverTextLib",
         sourcemap: true,
       },
     ],

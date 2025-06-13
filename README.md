@@ -13,13 +13,29 @@ A TypeScript library for creating a smooth shiver/shuffling animation to your te
 
 ## Installation
 
+Install shiver-text using your preferred package manager:
+
+#### npm
+
 ```bash
 npm install shiver-text
 ```
 
+#### pnpm
+
+```bash
+pnpm add shiver-text
+```
+
+#### yarn
+
+```bash
+yarn add shiver-text
+```
+
 ## Quick Start
 
-### Basic Usage
+#### Basic Usage
 
 ```typescript
 import { shiverText } from "shiver-text";
@@ -32,7 +48,7 @@ const element = document.getElementById("my-element");
 shiverText(element, "Hello World!");
 ```
 
-### Advanced Usage
+#### Advanced Usage
 
 ```typescript
 import { ShiverText } from "shiver-text";
@@ -69,8 +85,8 @@ Convenience function to create and start a shiver animation.
 **Parameters:**
 
 - `element: HTMLElement | string` - DOM element or selector
-- `text: string` (optional) - Text to animate to
-- `options: ShiverTextOptions` (optional) - Animation options
+- `text: string` _(optional)_ - Text to animate to
+- `options: ShiverTextOptions` _(optional)_ - Animation options
 
 **Returns:** `ShiverText` instance
 
@@ -87,19 +103,29 @@ Create a new ShiverText instance.
 
 ```typescript
 interface ShiverTextOptions {
-  /** Duration for each character to settle (ms) - default: 60 */
+  /**
+   * Duration for each character to settle (ms) - default: 60
+   */
   duration?: number;
 
-  /** Characters to use for shuffling - default: alphanumeric + symbols */
+  /**
+   * Characters to use for shuffling - default: alphanumeric + symbols
+   */
   charset?: string;
 
-  /** Delay between each character starting (ms) - default: 40 */
+  /**
+   * Delay between each character starting (ms) - default: 40
+   */
   delay?: number;
 
-  /** Callback when animation completes */
+  /**
+   * Callback when animation completes
+   */
   onComplete?: () => void;
 
-  /** Callback on each frame update */
+  /**
+   * Callback on each frame update
+   */
   onUpdate?: (text: string) => void;
 }
 ```
@@ -116,7 +142,7 @@ interface ShiverTextOptions {
 
 ```tsx
 import React, { useEffect, useRef } from "react";
-import { ShiverText } from "@yourusername/shiver-text";
+import { ShiverText } from "shiver-text";
 
 const ShiverTextComponent: React.FC<{ text: string }> = ({ text }) => {
   const elementRef = useRef<HTMLDivElement>(null);
@@ -148,16 +174,12 @@ const ShiverTextComponent: React.FC<{ text: string }> = ({ text }) => {
 ### Vue Component
 
 ```vue
-<template>
-  <div ref="textElement" class="shiver-text"></div>
-</template>
-
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from "vue";
-import { ShiverText } from "@yourusername/shiver-text";
+import { ShiverText } from "shiver-text";
 
 interface Props {
-  text: string;
+  msg: string;
 }
 
 const props = defineProps<Props>();
@@ -167,7 +189,7 @@ let shiverer: ShiverText | null = null;
 onMounted(() => {
   if (textElement.value) {
     shiverer = new ShiverText(textElement.value);
-    shiverer.setText(props.text);
+    shiverer.start();
   }
 });
 
@@ -176,12 +198,16 @@ onUnmounted(() => {
 });
 
 watch(
-  () => props.text,
-  (newText) => {
-    shiverer?.setText(newText);
+  () => props.msg,
+  (newMsg) => {
+    shiverer?.setText(newMsg);
   },
 );
 </script>
+
+<template>
+  <div ref="textElement">{{ msg }}</div>
+</template>
 ```
 
 ### Custom Styling

@@ -4,6 +4,13 @@
   "description": "A TypeScript library for creating a smooth shiver/shuffling animation to your text.",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js"
+    }
+  },
   "types": "dist/index.d.ts",
   "files": [
     "dist"
