@@ -1,21 +1,27 @@
 {
   "name": "shiver-text",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A TypeScript library for creating a smooth shiver/shuffling animation to your text.",
   "main": "dist/index.js",
-  "module": "dist/index.esm.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "files": [
     "dist"
   ],
-  "type": "module",
   "scripts": {
     "build": "rollup -c",
-    "dev": "rollup -c -w",
-    "test": "jest",
+    "dev": "rollup -c --watch",
     "prepublishOnly": "npm run build",
     "lint": "eslint src --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "clean": "rm -rf dist"
   },
   "keywords": [
     "text",
@@ -38,12 +44,13 @@
   "homepage": "https://github.com/gusleindecker/shiver-text#readme",
   "devDependencies": {
     "@eslint/js": "^9.28.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-typescript": "^12.1.2",
     "eslint": "^9.28.0",
     "prettier": "^3.5.3",
     "rollup": "^4.42.0",
     "rollup-plugin-dts": "^6.2.1",
-    "tslib": "^2.5.0",
+    "tslib": "^2.6.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.34.0"
   },
