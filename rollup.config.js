@@ -4,6 +4,34 @@ import terser from "@rollup/plugin-terser";
 import dts from "rollup-plugin-dts";
 
 const config = [
+  // UMD build (for script tags)
+  {
+    input: "src/index.ts",
+    output: {
+      file: "dist/index.js",
+      format: "umd",
+      name: "ShiverText",
+      sourcemap: true,
+      exports: "named",
+    },
+    plugins: [
+      nodeResolve(),
+      typescript({
+        tsconfig: "./tsconfig.json",
+        declaration: false,
+        declarationMap: false,
+        outDir: "dist",
+      }),
+      terser({
+        format: {
+          comments: false,
+        },
+        compress: {
+          drop_console: false,
+        },
+      }),
+    ],
+  },
   // ES Module build
   {
     input: "src/index.ts",
@@ -34,7 +62,7 @@ const config = [
   {
     input: "src/index.ts",
     output: {
-      file: "dist/index.js",
+      file: "dist/index.cjs",
       format: "cjs",
       sourcemap: true,
       exports: "named",
