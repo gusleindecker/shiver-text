@@ -1,5 +1,6 @@
 import typescript from "@rollup/plugin-typescript";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
+import terser from "@rollup/plugin-terser";
 import dts from "rollup-plugin-dts";
 
 const config = [
@@ -19,6 +20,14 @@ const config = [
         declarationMap: false,
         outDir: "dist",
       }),
+      terser({
+        format: {
+          comments: false, // Remove comments
+        },
+        compress: {
+          drop_console: false, // Keep console.log (set to true to remove)
+        },
+      }),
     ],
   },
   // CommonJS build
@@ -37,6 +46,14 @@ const config = [
         declaration: false,
         declarationMap: false,
         outDir: "dist",
+      }),
+      terser({
+        format: {
+          comments: false,
+        },
+        compress: {
+          drop_console: false,
+        },
       }),
     ],
   },
