@@ -53,34 +53,7 @@ const config = [
           comments: false, // Remove comments
         },
         compress: {
-          drop_console: false, // Keep console.log (set to true to remove)
-        },
-      }),
-    ],
-  },
-  // CommonJS build
-  {
-    input: "src/index.ts",
-    output: {
-      file: "dist/index.cjs",
-      format: "cjs",
-      sourcemap: true,
-      exports: "named",
-    },
-    plugins: [
-      nodeResolve(),
-      typescript({
-        tsconfig: "./tsconfig.json",
-        declaration: false,
-        declarationMap: false,
-        outDir: "dist",
-      }),
-      terser({
-        format: {
-          comments: false,
-        },
-        compress: {
-          drop_console: false,
+          drop_console: true,
         },
       }),
     ],

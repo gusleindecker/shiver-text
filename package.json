@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "type": "module",
   "description": "A library written in TypeScript for creating a smooth shiver-shuffling animation for your text.",
-  "main": "dist/index.cjs",
+  "main": "dist/index.js",
   "module": "dist/index.mjs",
   "browser": "dist/index.js",
   "unpkg": "dist/index.js",
@@ -12,7 +12,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs",
       "browser": "./dist/index.js"
     }
   },
