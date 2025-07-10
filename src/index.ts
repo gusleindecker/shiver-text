@@ -5,6 +5,8 @@ export interface ShiverTextOptions {
   charset?: string;
   /** Delay between each character starting (ms) */
   delay?: number;
+  /** Number of characters to scramble after the last revealed one */
+  scrambleRange?: number;
   /** Callback when animation completes */
   onComplete?: () => void;
   /** Callback on each frame update */
@@ -31,6 +33,7 @@ const defaultOptions: Required<ShiverTextOptions> = {
   charset:
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?",
   delay: 40,
+  scrambleRange: 3,
   onComplete: () => {},
   onUpdate: () => {},
 };
@@ -132,8 +135,8 @@ function generateDisplayText(
     if (charElapsed >= options.duration) {
       // Character is fully revealed
       displayText += char;
-    } else if (i < revealedCount + 3) {
-      // Character is within the 3-character scrambling window
+    } else if (i < revealedCount + options.scrambleRange) {
+      // Character is within the scrambling window
       displayText += getRandomChar(options.charset);
     }
     // Characters beyond the window are not added (effectively empty)
@@ -204,22 +207,3 @@ export function createShiverText(
 
   return { start, stop, setText };
 }
-
-// /**
-//  * Convenience function to create and start a shiver effect
-//  */
-// export const shiverText = (
-//   element: HTMLElement | string,
-//   text?: string,
-//   options?: ShiverTextOptions,
-// ): ShiverTextInstance => {
-//   const instance = createShiverText(element, options);
-
-//   if (text) {
-//     instance.setText(text);
-//   } else {
-//     instance.start();
-//   }
-
-//   return instance;
-// };
