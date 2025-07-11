@@ -1,6 +1,6 @@
 # Shiver Text
 
-A TypeScript library for creating a smooth shiver/shuffling animation to your text. Perfect for creating engaging text reveals with a cyberpunk/glitch feel.
+A library written in TypeScript for creating a smooth shiver-shuffling animation for your text. Perfect for creating engaging text reveals with a cyberpunk/glitch feel.
 
 ## Features
 
@@ -19,110 +19,142 @@ npm install shiver-text
 
 ## Quick Start
 
-### Basic Usage
+### Basic Usage (vanilla JS - UMD)
 
-```typescript
-import { shiverText } from 'shiver-text';
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shiver Text UMD Test</title>
+  </head>
+  <body>
+    <h1>Shiver Text UMD Demo</h1>
 
-// Basic usage with default options
-shiverText('#my-element', 'Hello World!');
+    <div id="demo1">Hello World!</div>
+    <button onclick="startDemo1()">Start Animation</button>
 
-// Or with an element reference
-const element = document.getElementById('my-element');
-shiverText(element, 'Hello World!');
-```
+    <div id="demo2">Welcome to the matrix...</div>
+    <button onclick="startDemo2()">Slower Animation</button>
 
-### Advanced Usage
+    <div id="demo3"></div>
+    <button onclick="changeText()">Change Text</button>
 
-```typescript
-import { ShiverText } from 'shiver-text';
+    <!-- Import shiver-text UMD build -->
+    <script src="https://unpkg.com/shiver-text@0.2.0/dist/index.js"></script>
+    <script>
+      // ShiverText is available globally
 
-const element = document.querySelector('.title');
-const shiverer = new ShiverText(element, {
-  duration: 80,        // Time for each character to settle (ms)
-  delay: 50,          // Delay between each character starting (ms)
-  charset: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*',
-  onComplete: () => {
-    console.log('Animation complete!');
-  },
-  onUpdate: (currentText) => {
-    console.log('Current text:', currentText);
-  }
-});
+      console.log("ShiverText:", typeof ShiverText); // ShiverText available: object
+      console.log("createShiverText:", typeof ShiverText.createShiverText); // createShiverText: function
 
-// Start the animation
-shiverer.start();
+      // Create instances
+      const shiverInstance1 = ShiverText.createShiverText("#demo1");
+      const shiverInstance2 = ShiverText.createShiverText("#demo2", {
+        duration: 100,
+        delay: 60,
+        charset: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*",
+      });
+      const shiverInstance3 = ShiverText.createShiverText("#demo3");
 
-// Change text and animate
-shiverer.setText('New text to animate');
+      // Demo functions
+      function startDemo1() {
+        shiverInstance1.start();
+      }
 
-// Stop animation
-shiverer.stop();
+      function startDemo2() {
+        shiverInstance2.start();
+      }
+
+      function changeText() {
+        const texts = [
+          "JavaScript is awesome!",
+          "TypeScript rocks!",
+          "Web development is fun!",
+          "Shiver text effect!",
+        ];
+        const randomText = texts[Math.floor(Math.random() * texts.length)];
+        shiverInstance3.setText(randomText);
+      }
+    </script>
+  </body>
+</html>
 ```
 
 ## API Reference
 
-### `shiverText(element, text?, options?)`
+### `createShiverText(element, options?)`
 
-Convenience function to create and start a shiver animation.
+Creates a new ShiverText instance.
 
 **Parameters:**
+
 - `element: HTMLElement | string` - DOM element or selector
-- `text: string` (optional) - Text to animate to
 - `options: ShiverTextOptions` (optional) - Animation options
 
-**Returns:** `ShiverText` instance
+**Returns:** `ShiverTextInstance`
 
-### `new ShiverText(element, options?)`
+### Types
 
-Create a new ShiverText instance.
-
-**Parameters:**
-- `element`: `HTMLElement | string` - DOM element or selector
-- `options`: `ShiverTextOptions` (optional) - Animation options
-
-### Options
+#### Options
 
 ```typescript
 interface ShiverTextOptions {
   /** Duration for each character to settle (ms) - default: 60 */
   duration?: number;
-  
+
   /** Characters to use for shuffling - default: alphanumeric + symbols */
   charset?: string;
-  
+
   /** Delay between each character starting (ms) - default: 40 */
   delay?: number;
-  
+
+  /** Number of characters to scramble after the last revealed one - default: 3 */
+  scrambleRange?: number;
+
   /** Callback when animation completes */
   onComplete?: () => void;
-  
+
   /** Callback on each frame update */
   onUpdate?: (text: string) => void;
 }
 ```
 
-### Methods
+#### ShiverTextInstance
 
-- `start()`: Start the shiver animation
-- `stop()`: Stop the current animation
-- `setText(text, autoStart?)`: Set new text and optionally start animation
+```typescript
+interface ShiverTextInstance {
+  /** Start the shiver animation */
+  start(): void;
+  /** Stop the current animation */
+  stop(): void;
+  /** Set new text and optionally start animation */
+  setText(text: string, autoStart?: boolean): void;
+}
+```
+
+### Instance Methods
+
+- `shiverTextInstance.start()`: Start the shiver animation
+- `shiverTextInstance.stop()`: Stop the current animation
+- `shiverTextInstance.setText(text, autoStart?)`: Set new text and optionally start animation
 
 ## Examples
 
 ### React Component
 
 ```tsx
-import React, { useEffect, useRef } from 'react';
-import { ShiverText } from '@yourusername/shiver-text';
+import React, { useEffect, useRef } from "react";
+import { createShiverText, ShiverTextInstance } from "shiver-text";
 
 const ShiverTextComponent: React.FC<{ text: string }> = ({ text }) => {
   const elementRef = useRef<HTMLDivElement>(null);
-  const shivererRef = useRef<ShiverText | null>(null);
+  const shivererRef = useRef<ShiverTextInstance | null>(null);
 
   useEffect(() => {
     if (elementRef.current) {
-      shivererRef.current = new ShiverText(elementRef.current, {
+      shivererRef.current = createShiverText(elementRef.current, {
         duration: 100,
         delay: 30,
       });
@@ -146,51 +178,35 @@ const ShiverTextComponent: React.FC<{ text: string }> = ({ text }) => {
 ### Vue Component
 
 ```vue
-<template>
-  <div ref="textElement" class="shiver-text"></div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
-import { ShiverText } from '@yourusername/shiver-text';
+import { onMounted, useTemplateRef, type ShallowRef } from "vue";
+import { createShiverText, type ShiverTextOptions } from "shiver-text";
 
-interface Props {
-  text: string;
-}
-
-const props = defineProps<Props>();
-const textElement = ref<HTMLElement>();
-let shiverer: ShiverText | null = null;
+const textDiv = useTemplateRef("textDiv") as Readonly<
+  ShallowRef<HTMLDivElement>
+>;
 
 onMounted(() => {
-  if (textElement.value) {
-    shiverer = new ShiverText(textElement.value);
-    shiverer.setText(props.text);
-  }
-});
-
-onUnmounted(() => {
-  shiverer?.stop();
-});
-
-watch(() => props.text, (newText) => {
-  shiverer?.setText(newText);
+  const shiverTextOptions: ShiverTextOptions = {
+    duration: 10,
+    delay: 8,
+    scrambleRange: 15,
+  };
+  createShiverText(textDiv.value, shiverTextOptions).start();
 });
 </script>
-```
 
-### Custom Styling
-
-```css
-.shiver-text {
-  font-family: 'Courier New', monospace;
-  font-size: 2rem;
-  font-weight: bold;
-  color: #00ff00;
-  text-shadow: 0 0 5px #00ff00;
-  background: #000;
-  padding: 1rem;
-}
+<template>
+  <div ref="textDiv">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur
+    condimentum pellentesque nunc non viverra. Phasellus non magna at diam
+    mattis volutpat sit amet et lorem. Class aptent taciti sociosqu ad litora
+    torquent per conubia nostra, per inceptos himenaeos. Vivamus augue lacus,
+    dapibus quis bibendum ac, mattis finibus magna. Donec laoreet nisl erat,
+    convallis blandit nunc hendrerit ac. Suspendisse viverra ante id nulla
+    pretium, eget pellentesque diam luctus. Vivamus quis libero orci.
+  </div>
+</template>
 ```
 
 ## Browser Support
@@ -206,4 +222,4 @@ MIT License - see LICENSE file for details.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit issues or open up a Pull Request.
