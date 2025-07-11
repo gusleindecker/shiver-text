@@ -2,7 +2,7 @@
   "name": "shiver-text",
   "version": "0.2.0",
   "type": "module",
-  "description": "A library written in TypeScript for creating a smooth shiver-shuffling animation for your text.",
+  "description": "A small library (6kb gzipped) written in TypeScript for creating a smooth shiver-shuffling animation for your text.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "browser": "dist/index.js",

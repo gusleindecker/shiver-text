@@ -1,6 +1,8 @@
 # Shiver Text
 
-A library written in TypeScript for creating a smooth shiver-shuffling animation for your text. Perfect for creating engaging text reveals with a cyberpunk/glitch feel.
+A small library (6kb gzipped) written in TypeScript for creating a smooth shiver-shuffling animation for your text. Perfect for creating engaging text reveals with a cyberpunk/glitch feel.
+
+![](shiver-text.gif)
 
 ## Features
 
@@ -19,7 +21,20 @@ npm install shiver-text
 
 ## Quick Start
 
-### Basic Usage (vanilla JS - UMD)
+### Usage with a Bundler (ESM)
+
+```javascript
+import { createShiverText } from "shiver-text";
+
+// Get your element
+const myElement = document.getElementById("my-element");
+
+// Create an instance and start the animation
+const shiverInstance = createShiverText(myElement);
+shiverInstance.start();
+```
+
+### Basic Usage (Vanilla JS with a `<script>` tag)
 
 ```html
 <!doctype html>
@@ -41,42 +56,17 @@ npm install shiver-text
     <div id="demo3"></div>
     <button onclick="changeText()">Change Text</button>
 
-    <!-- Import shiver-text UMD build -->
-    <script src="https://unpkg.com/shiver-text@0.2.0/dist/index.js"></script>
+    <!-- Import shiver-text UMD build in your HTML -->
+    <script src="https://cdn.jsdelivr.net/npm/shiver-text@latest/dist/index.js"></script>
     <script>
       // ShiverText is available globally
 
-      console.log("ShiverText:", typeof ShiverText); // ShiverText available: object
-      console.log("createShiverText:", typeof ShiverText.createShiverText); // createShiverText: function
-
-      // Create instances
-      const shiverInstance1 = ShiverText.createShiverText("#demo1");
-      const shiverInstance2 = ShiverText.createShiverText("#demo2", {
+      const shiverTextInstance = ShiverText.createShiverText("#my-element", {
         duration: 100,
         delay: 60,
         charset: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*",
       });
-      const shiverInstance3 = ShiverText.createShiverText("#demo3");
-
-      // Demo functions
-      function startDemo1() {
-        shiverInstance1.start();
-      }
-
-      function startDemo2() {
-        shiverInstance2.start();
-      }
-
-      function changeText() {
-        const texts = [
-          "JavaScript is awesome!",
-          "TypeScript rocks!",
-          "Web development is fun!",
-          "Shiver text effect!",
-        ];
-        const randomText = texts[Math.floor(Math.random() * texts.length)];
-        shiverInstance3.setText(randomText);
-      }
+      shiverTextInstance.start();
     </script>
   </body>
 </html>
@@ -129,8 +119,8 @@ interface ShiverTextInstance {
   start(): void;
   /** Stop the current animation */
   stop(): void;
-  /** Set new text and optionally start animation */
-  setText(text: string, autoStart?: boolean): void;
+  /** Set new text and start the animation. */
+  setText(text: string, autoStart?: boolean = true): void;
 }
 ```
 
@@ -211,9 +201,6 @@ onMounted(() => {
 
 ## Browser Support
 
-- Chrome/Edge 61+
-- Firefox 55+
-- Safari 10.1+
 - All modern browsers with `requestAnimationFrame` support
 
 ## License
