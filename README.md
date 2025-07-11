@@ -2,7 +2,7 @@
 
 A small library (6kb gzipped) written in TypeScript for creating a smooth shiver-shuffling animation for your text. Perfect for creating engaging text reveals with a cyberpunk/glitch feel.
 
-![](shiver-text.gif)
+![Shiver Text Animation Demo](shiver-text.gif)
 
 ## Features
 
@@ -126,9 +126,9 @@ interface ShiverTextInstance {
 
 ### Instance Methods
 
-- `shiverTextInstance.start()`: Start the shiver animation
-- `shiverTextInstance.stop()`: Stop the current animation
-- `shiverTextInstance.setText(text, autoStart?)`: Set new text and optionally start animation
+- `start()`: Start the shiver animation
+- `stop()`: Stop the current animation
+- `setText(text, autoStart?)`: Set new text and optionally start animation
 
 ## Examples
 
@@ -201,7 +201,14 @@ onMounted(() => {
 
 ## Browser Support
 
-- All modern browsers with `requestAnimationFrame` support
+This library is compiled to ES2020 JavaScript, making it compatible with a wide range of modern browsers, including:
+
+- Chrome >= 80
+- Firefox >= 74
+- Safari >= 13.1
+- Edge >= 80
+
+The animation relies on `requestAnimationFrame`, which is broadly supported in all modern browsers.
 
 ## License
 
@@ -209,4 +216,4 @@ MIT License - see LICENSE file for details.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues or open up a Pull Request.
+Contributions are welcome! Please submit issues or open up a Pull Request.
