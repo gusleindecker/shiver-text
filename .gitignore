@@ -106,3 +106,13 @@ dist
 # OS generated files
 # macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Linux / BSD (GVFS)
+.Trash-*
+.fuse_hidden*
