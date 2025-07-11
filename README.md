@@ -1,6 +1,8 @@
 # Shiver Text
 
-A TypeScript library for creating a smooth shiver/shuffling animation to your text. Perfect for creating engaging text reveals with a cyberpunk/glitch feel.
+A small library (6kb gzipped) written in TypeScript for creating a smooth shiver-shuffling animation for your text. Perfect for creating engaging text reveals with a cyberpunk/glitch feel.
+
+![Shiver Text Animation Demo](shiver-text.gif)
 
 ## Features
 
@@ -19,90 +21,110 @@ npm install shiver-text
 
 ## Quick Start
 
-### Basic Usage
+### Usage with a Bundler (ESM)
 
-```typescript
-import { shiverText } from 'shiver-text';
+```javascript
+import { createShiverText } from "shiver-text";
 
-// Basic usage with default options
-shiverText('#my-element', 'Hello World!');
+// Get your element
+const myElement = document.getElementById("my-element");
 
-// Or with an element reference
-const element = document.getElementById('my-element');
-shiverText(element, 'Hello World!');
+// Create an instance and start the animation
+const shiverInstance = createShiverText(myElement);
+shiverInstance.start();
 ```
 
-### Advanced Usage
+### Basic Usage (Vanilla JS with a `<script>` tag)
 
-```typescript
-import { ShiverText } from 'shiver-text';
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shiver Text UMD Test</title>
+  </head>
+  <body>
+    <h1>Shiver Text UMD Demo</h1>
 
-const element = document.querySelector('.title');
-const shiverer = new ShiverText(element, {
-  duration: 80,        // Time for each character to settle (ms)
-  delay: 50,          // Delay between each character starting (ms)
-  charset: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*',
-  onComplete: () => {
-    console.log('Animation complete!');
-  },
-  onUpdate: (currentText) => {
-    console.log('Current text:', currentText);
-  }
-});
+    <div id="demo1">Hello World!</div>
+    <button onclick="startDemo1()">Start Animation</button>
 
-// Start the animation
-shiverer.start();
+    <div id="demo2">Welcome to the matrix...</div>
+    <button onclick="startDemo2()">Slower Animation</button>
 
-// Change text and animate
-shiverer.setText('New text to animate');
+    <div id="demo3"></div>
+    <button onclick="changeText()">Change Text</button>
 
-// Stop animation
-shiverer.stop();
+    <!-- Import shiver-text UMD build in your HTML -->
+    <script src="https://cdn.jsdelivr.net/npm/shiver-text@latest/dist/index.js"></script>
+    <script>
+      // ShiverText is available globally
+
+      const shiverTextInstance = ShiverText.createShiverText("#my-element", {
+        duration: 100,
+        delay: 60,
+        charset: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*",
+      });
+      shiverTextInstance.start();
+    </script>
+  </body>
+</html>
 ```
 
 ## API Reference
 
-### `shiverText(element, text?, options?)`
+### `createShiverText(element, options?)`
 
-Convenience function to create and start a shiver animation.
+Creates a new ShiverText instance.
 
 **Parameters:**
+
 - `element: HTMLElement | string` - DOM element or selector
-- `text: string` (optional) - Text to animate to
 - `options: ShiverTextOptions` (optional) - Animation options
 
-**Returns:** `ShiverText` instance
+**Returns:** `ShiverTextInstance`
 
-### `new ShiverText(element, options?)`
+### Types
 
-Create a new ShiverText instance.
-
-**Parameters:**
-- `element`: `HTMLElement | string` - DOM element or selector
-- `options`: `ShiverTextOptions` (optional) - Animation options
-
-### Options
+#### Options
 
 ```typescript
 interface ShiverTextOptions {
   /** Duration for each character to settle (ms) - default: 60 */
   duration?: number;
-  
+
   /** Characters to use for shuffling - default: alphanumeric + symbols */
   charset?: string;
-  
+
   /** Delay between each character starting (ms) - default: 40 */
   delay?: number;
-  
+
+  /** Number of characters to scramble after the last revealed one - default: 3 */
+  scrambleRange?: number;
+
   /** Callback when animation completes */
   onComplete?: () => void;
-  
+
   /** Callback on each frame update */
   onUpdate?: (text: string) => void;
 }
 ```
 
-### Methods
+#### ShiverTextInstance
+
+```typescript
+interface ShiverTextInstance {
+  /** Start the shiver animation */
+  start(): void;
+  /** Stop the current animation */
+  stop(): void;
+  /** Set new text and start the animation. */
+  setText(text: string, autoStart?: boolean = true): void;
+}
+```
+
+### Instance Methods
 
 - `start()`: Start the shiver animation
 - `stop()`: Stop the current animation
@@ -113,16 +135,16 @@ interface ShiverTextOptions {
 ### React Component
 
 ```tsx
-import React, { useEffect, useRef } from 'react';
-import { ShiverText } from '@yourusername/shiver-text';
+import React, { useEffect, useRef } from "react";
+import { createShiverText, ShiverTextInstance } from "shiver-text";
 
 const ShiverTextComponent: React.FC<{ text: string }> = ({ text }) => {
   const elementRef = useRef<HTMLDivElement>(null);
-  const shivererRef = useRef<ShiverText | null>(null);
+  const shivererRef = useRef<ShiverTextInstance | null>(null);
 
   useEffect(() => {
     if (elementRef.current) {
-      shivererRef.current = new ShiverText(elementRef.current, {
+      shivererRef.current = createShiverText(elementRef.current, {
         duration: 100,
         delay: 30,
       });
@@ -146,59 +168,47 @@ const ShiverTextComponent: React.FC<{ text: string }> = ({ text }) => {
 ### Vue Component
 
 ```vue
-<template>
-  <div ref="textElement" class="shiver-text"></div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
-import { ShiverText } from '@yourusername/shiver-text';
+import { onMounted, useTemplateRef, type ShallowRef } from "vue";
+import { createShiverText, type ShiverTextOptions } from "shiver-text";
 
-interface Props {
-  text: string;
-}
-
-const props = defineProps<Props>();
-const textElement = ref<HTMLElement>();
-let shiverer: ShiverText | null = null;
+const textDiv = useTemplateRef("textDiv") as Readonly<
+  ShallowRef<HTMLDivElement>
+>;
 
 onMounted(() => {
-  if (textElement.value) {
-    shiverer = new ShiverText(textElement.value);
-    shiverer.setText(props.text);
-  }
-});
-
-onUnmounted(() => {
-  shiverer?.stop();
-});
-
-watch(() => props.text, (newText) => {
-  shiverer?.setText(newText);
+  const shiverTextOptions: ShiverTextOptions = {
+    duration: 10,
+    delay: 8,
+    scrambleRange: 15,
+  };
+  createShiverText(textDiv.value, shiverTextOptions).start();
 });
 </script>
-```
 
-### Custom Styling
-
-```css
-.shiver-text {
-  font-family: 'Courier New', monospace;
-  font-size: 2rem;
-  font-weight: bold;
-  color: #00ff00;
-  text-shadow: 0 0 5px #00ff00;
-  background: #000;
-  padding: 1rem;
-}
+<template>
+  <div ref="textDiv">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur
+    condimentum pellentesque nunc non viverra. Phasellus non magna at diam
+    mattis volutpat sit amet et lorem. Class aptent taciti sociosqu ad litora
+    torquent per conubia nostra, per inceptos himenaeos. Vivamus augue lacus,
+    dapibus quis bibendum ac, mattis finibus magna. Donec laoreet nisl erat,
+    convallis blandit nunc hendrerit ac. Suspendisse viverra ante id nulla
+    pretium, eget pellentesque diam luctus. Vivamus quis libero orci.
+  </div>
+</template>
 ```
 
 ## Browser Support
 
-- Chrome/Edge 61+
-- Firefox 55+
-- Safari 10.1+
-- All modern browsers with `requestAnimationFrame` support
+This library is compiled to ES2020 JavaScript, making it compatible with a wide range of modern browsers, including:
+
+- Chrome >= 80
+- Firefox >= 74
+- Safari >= 13.1
+- Edge >= 80
+
+The animation relies on `requestAnimationFrame`, which is broadly supported in all modern browsers.
 
 ## License
 
@@ -206,4 +216,4 @@ MIT License - see LICENSE file for details.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please submit issues or open up a Pull Request.

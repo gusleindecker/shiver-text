@@ -5,151 +5,205 @@ export interface ShiverTextOptions {
   charset?: string;
   /** Delay between each character starting (ms) */
   delay?: number;
+  /** Number of characters to scramble after the last revealed one */
+  scrambleRange?: number;
   /** Callback when animation completes */
   onComplete?: () => void;
   /** Callback on each frame update */
   onUpdate?: (text: string) => void;
 }
 
-export class ShiverText {
-  private element: HTMLElement;
-  private originalText: string;
-  private options: Required<ShiverTextOptions>;
-  private animationId: number | null = null;
-  private startTime: number = 0;
-  private isAnimating: boolean = false;
+export interface ShiverTextInstance {
+  start: () => void;
+  stop: () => void;
+  setText: (text: string, autoStart?: boolean) => void;
+}
 
-  constructor(element: HTMLElement | string, options: ShiverTextOptions = {}) {
-    this.element =
-      typeof element === "string"
-        ? (document.querySelector(element) as HTMLElement)
-        : element;
+interface ShiverTextState {
+  element: HTMLElement;
+  originalText: string;
+  options: Required<ShiverTextOptions>;
+  animationId: number | null;
+  startTime: number;
+  isAnimating: boolean;
+}
 
-    if (!this.element) {
-      throw new Error("Element not found");
-    }
+const defaultOptions: Required<ShiverTextOptions> = {
+  duration: 60,
+  charset:
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?",
+  delay: 40,
+  scrambleRange: 3,
+  onComplete: () => {},
+  onUpdate: () => {},
+};
 
-    this.originalText = this.element.textContent || "";
-    this.options = {
-      duration: 60,
-      charset:
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?",
-      delay: 40,
-      onComplete: () => {},
-      onUpdate: () => {},
-      ...options,
-    };
+function createElement(element: HTMLElement | string): HTMLElement {
+  const el =
+    typeof element === "string"
+      ? document.querySelector<HTMLElement>(element)
+      : element;
+
+  if (!el) {
+    throw new Error(
+      "Element not found! You need to provide an element that exists in your HTML for shiver-text to work."
+    );
   }
 
-  /**
-   * Start the shuffle animation
-   */
-  start(): void {
-    if (this.isAnimating) {
-      this.stop();
-    }
+  return el;
+}
 
-    this.isAnimating = true;
-    this.startTime = performance.now();
-    this.animate();
-  }
+function mergeOptions(options: ShiverTextOptions): Required<ShiverTextOptions> {
+  return { ...defaultOptions, ...options };
+}
 
-  /**
-   * Stop the animation
-   */
-  stop(): void {
-    if (this.animationId) {
-      cancelAnimationFrame(this.animationId);
-      this.animationId = null;
-    }
-    this.isAnimating = false;
-  }
+function getRandomChar(charset: string): string {
+  return charset[Math.floor(Math.random() * charset.length)];
+}
 
-  /**
-   * Set new text and optionally start animation
-   */
-  setText(text: string, autoStart: boolean = true): void {
-    this.originalText = text;
-    if (autoStart) {
-      this.start();
-    }
-  }
-
-  /**
-   * Get a random character from the charset
-   */
-  private getRandomChar(): string {
-    return this.options.charset[
-      Math.floor(Math.random() * this.options.charset.length)
-    ];
-  }
-
-  /**
-   * Main animation loop
-   */
-  private animate = (): void => {
-    if (!this.isAnimating) return;
-
-    const currentTime = performance.now();
-    const elapsed = currentTime - this.startTime;
-
-    let displayText = "";
-    let allComplete = true;
-
-    for (let i = 0; i < this.originalText.length; i++) {
-      const char = this.originalText[i];
-
-      // Skip spaces - they appear immediately
-      if (char === " ") {
-        displayText += " ";
-        continue;
-      }
-
-      const charStartTime = i * this.options.delay;
-      const charElapsed = Math.max(0, elapsed - charStartTime);
-
-      if (charElapsed >= this.options.duration) {
-        // Character is complete
-        displayText += char;
-      } else if (charElapsed > 0) {
-        // Character is animating
-        displayText += this.getRandomChar();
-        allComplete = false;
-      } else {
-        // Character hasn't started yet
-        displayText += this.getRandomChar();
-        allComplete = false;
-      }
-    }
-
-    // Update the element
-    this.element.textContent = displayText;
-    this.options.onUpdate(displayText);
-
-    if (allComplete) {
-      this.isAnimating = false;
-      this.options.onComplete();
-    } else {
-      this.animationId = requestAnimationFrame(this.animate);
-    }
+function createInitialState(
+  element: HTMLElement | string,
+  options: ShiverTextOptions = {}
+): ShiverTextState {
+  const el = createElement(element);
+  return {
+    element: el,
+    originalText: el.textContent ?? "",
+    options: mergeOptions(options),
+    animationId: null,
+    startTime: 0,
+    isAnimating: false,
   };
 }
 
-/**
- * Convenience function to create and start a shiver effect
- */
-export function shiverText(
-  element: HTMLElement | string,
-  text?: string,
-  options?: ShiverTextOptions
-): ShiverText {
-  const shiverer = new ShiverText(element, options);
+function updateState<K extends keyof ShiverTextState>(
+  state: ShiverTextState,
+  updates: Pick<ShiverTextState, K>
+): ShiverTextState {
+  return { ...state, ...updates };
+}
 
-  if (text) {
-    shiverer.setText(text);
-  } else {
-    shiverer.start();
+function stopAnimation(state: ShiverTextState): ShiverTextState {
+  if (state.animationId) {
+    cancelAnimationFrame(state.animationId);
+  }
+  return updateState(state, {
+    animationId: null,
+    isAnimating: false,
+  });
+}
+
+function generateDisplayText(
+  originalText: string,
+  elapsed: number,
+  options: Required<ShiverTextOptions>
+): { text: string; allComplete: boolean } {
+  let displayText = "";
+  let revealedCount = 0;
+
+  // First pass: count how many characters are fully revealed
+  for (let i = 0, len = originalText.length; i < len; i++) {
+    const char = originalText[i];
+
+    if (char === " ") {
+      revealedCount++;
+      continue;
+    }
+
+    const charStartTime = i * options.delay;
+    const charElapsed = Math.max(0, elapsed - charStartTime);
+
+    if (charElapsed >= options.duration) {
+      revealedCount++;
+    } else {
+      break; // Stop counting once we hit an unrevealed character
+    }
   }
 
-  return shiverer;
+  // Second pass: build the display text
+  for (let i = 0, len = originalText.length; i < len; i++) {
+    const char = originalText[i];
+
+    if (char === " ") {
+      displayText += " ";
+      continue;
+    }
+
+    const charStartTime = i * options.delay;
+    const charElapsed = Math.max(0, elapsed - charStartTime);
+
+    if (charElapsed >= options.duration) {
+      // Character is fully revealed
+      displayText += char;
+    } else if (i < revealedCount + options.scrambleRange) {
+      // Character is within the scrambling window
+      displayText += getRandomChar(options.charset);
+    }
+    // Characters beyond the window are not added (effectively empty)
+  }
+
+  const allComplete = revealedCount === originalText.length;
+  return { text: displayText, allComplete };
+}
+
+function createAnimationLoop(stateRef: { current: ShiverTextState }) {
+  const animate = (): void => {
+    if (!stateRef.current.isAnimating) return;
+
+    const currentTime = performance.now();
+    const elapsed = currentTime - stateRef.current.startTime;
+
+    const { text: displayText, allComplete } = generateDisplayText(
+      stateRef.current.originalText,
+      elapsed,
+      stateRef.current.options
+    );
+
+    stateRef.current.element.textContent = displayText;
+    stateRef.current.options.onUpdate(displayText);
+
+    if (allComplete) {
+      stateRef.current = updateState(stateRef.current, { isAnimating: false });
+      stateRef.current.options.onComplete();
+    } else {
+      const animationId = requestAnimationFrame(animate);
+      stateRef.current = updateState(stateRef.current, { animationId });
+    }
+  };
+
+  return animate;
+}
+
+export function createShiverText(
+  element: HTMLElement | string,
+  options: ShiverTextOptions = {}
+): ShiverTextInstance {
+  const stateRef = { current: createInitialState(element, options) };
+  const animate = createAnimationLoop(stateRef);
+
+  const start = (): void => {
+    if (stateRef.current.isAnimating) {
+      stateRef.current = stopAnimation(stateRef.current);
+    }
+
+    stateRef.current = updateState(stateRef.current, {
+      isAnimating: true,
+      startTime: performance.now(),
+    });
+
+    animate();
+  };
+
+  const stop = (): void => {
+    stateRef.current = stopAnimation(stateRef.current);
+  };
+
+  const setText = (text: string, autoStart: boolean = true): void => {
+    stateRef.current = updateState(stateRef.current, { originalText: text });
+    if (autoStart) {
+      start();
+    }
+  };
+
+  return { start, stop, setText };
 }

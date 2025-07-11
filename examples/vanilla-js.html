@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shiver Text UMD Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 50px;
+        background: #1a1a1a;
+        color: #fff;
+      }
+
+      .demo-text {
+        font-size: 2rem;
+        margin: 20px 0;
+        font-weight: bold;
+        min-height: 2.5rem;
+      }
+
+      button {
+        background: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 10px;
+        font-size: 16px;
+      }
+
+      button:hover {
+        background: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Shiver Text UMD Demo</h1>
+
+    <div id="demo1" class="demo-text">Hello World!</div>
+    <button onclick="startDemo1()">Start Animation</button>
+
+    <div id="demo2" class="demo-text">Welcome to the matrix...</div>
+    <button onclick="startDemo2()">Slower Animation</button>
+
+    <div id="demo3" class="demo-text"></div>
+    <button onclick="changeText()">Change Text</button>
+
+    <!-- Import your UMD build -->
+    <script src="../dist/index.js"></script>
+    <script>
+      // ShiverText is now available globally
+      console.log("ShiverText:", typeof ShiverText); // ShiverText available: object
+      console.log("createShiverText:", typeof ShiverText.createShiverText); // createShiverText: function
+
+      // Create instances
+      const shiverInstance1 = ShiverText.createShiverText("#demo1");
+      const shiverInstance2 = ShiverText.createShiverText("#demo2", {
+        duration: 100,
+        delay: 60,
+        charset: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*",
+      });
+      const shiverInstance3 = ShiverText.createShiverText("#demo3");
+
+      // Demo functions
+      function startDemo1() {
+        shiverInstance1.start();
+      }
+
+      function startDemo2() {
+        shiverInstance2.start();
+      }
+
+      function changeText() {
+        const texts = [
+          "JavaScript is awesome!",
+          "TypeScript rocks!",
+          "Web development is fun!",
+          "Shiver text effect!",
+        ];
+        const randomText = texts[Math.floor(Math.random() * texts.length)];
+        shiverInstance3.setText(randomText);
+      }
+    </script>
+  </body>
+</html>

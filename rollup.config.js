@@ -1,38 +1,69 @@
-import typescript from '@rollup/plugin-typescript';
-import dts from 'rollup-plugin-dts';
+import typescript from "@rollup/plugin-typescript";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import terser from "@rollup/plugin-terser";
+import dts from "rollup-plugin-dts";
 
 const config = [
-  // Build the main library
+  // UMD build (for script tags)
   {
-    input: 'src/index.ts',
-    output: [
-      {
-        file: 'dist/index.js',
-        format: 'cjs',
-        sourcemap: true,
-      },
-      {
-        file: 'dist/index.esm.js',
-        format: 'esm',
-        sourcemap: true,
-      },
-    ],
+    input: "src/index.ts",
+    output: {
+      file: "dist/index.js",
+      format: "umd",
+      name: "ShiverText",
+      sourcemap: true,
+      exports: "named",
+    },
     plugins: [
+      nodeResolve(),
       typescript({
-        tsconfig: './tsconfig.json',
-        declaration: true,
-        declarationDir: 'dist',
-        rootDir: 'src',
+        tsconfig: "./tsconfig.json",
+        declaration: false,
+        declarationMap: false,
+        outDir: "dist",
+      }),
+      terser({
+        format: {
+          comments: false,
+        },
+        compress: {
+          drop_console: false,
+        },
       }),
     ],
-    external: [],
   },
-  // Bundle type definitions
+  // ES Module build
   {
-    input: 'dist/index.d.ts',
+    input: "src/index.ts",
     output: {
-      file: 'dist/index.d.ts',
-      format: 'esm',
+      file: "dist/index.mjs",
+      format: "es",
+      sourcemap: true,
+    },
+    plugins: [
+      nodeResolve(),
+      typescript({
+        tsconfig: "./tsconfig.json",
+        declaration: false, // We'll handle declarations separately
+        declarationMap: false,
+        outDir: "dist",
+      }),
+      terser({
+        format: {
+          comments: false, // Remove comments
+        },
+        compress: {
+          drop_console: true,
+        },
+      }),
+    ],
+  },
+  // TypeScript declarations
+  {
+    input: "src/index.ts",
+    output: {
+      file: "dist/index.d.ts",
+      format: "es",
     },
     plugins: [dts()],
   },
