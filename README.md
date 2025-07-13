@@ -1,5 +1,8 @@
 # Shiver Text
 
+[![Latest NPM release](https://img.shields.io/npm/v/shiver-text.svg)](https://www.npmjs.com/package/shiver-text)
+![MIT License](https://img.shields.io/npm/l/shiver-text.svg)
+
 A small library (6kb gzipped) written in TypeScript for creating a smooth shiver-shuffling animation for your text. Perfect for creating engaging text reveals with a cyberpunk/glitch feel.
 
 ![Shiver Text Animation Demo](shiver-text.gif)
