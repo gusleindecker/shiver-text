@@ -147,12 +147,14 @@ function generateDisplayHTML(
   elapsed: number,
   options: Required<ShiverTextOptions>
 ): { html: string; allComplete: boolean } {
+  const parsedContentLength = parsedContent.length;
   let displayHTML = "";
   let characterIndex = 0;
   let revealedCount = 0;
 
   // First pass: count revealed characters
-  for (const item of parsedContent) {
+  for (let i = 0; i < parsedContentLength; i++) {
+    const item = parsedContent[i];
     if (item.type === "character") {
       const charStartTime = characterIndex * options.delay;
       const charElapsed = Math.max(0, elapsed - charStartTime);
@@ -168,7 +170,8 @@ function generateDisplayHTML(
 
   // Second pass: build display HTML
   characterIndex = 0;
-  for (const item of parsedContent) {
+  for (let i = 0; i < parsedContentLength; i++) {
+    const item = parsedContent[i];
     if (item.type === "tag" || item.type === "space") {
       displayHTML += item.content;
     } else if (item.type === "character") {
