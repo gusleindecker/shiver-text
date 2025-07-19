@@ -24,10 +24,15 @@ interface ParsedContent {
   content: string;
 }
 
+interface ParsedResult {
+  content: ParsedContent[];
+  totalCharacters: number;
+}
+
 interface ShiverTextState {
   element: HTMLElement;
   originalHTML: string;
-  parsedContent: ParsedContent[];
+  parsedResult: ParsedResult;
   options: Required<ShiverTextOptions>;
   animationId: number | null;
   startTime: number;
@@ -67,16 +72,19 @@ function getRandomChar(charset: string): string {
   return charset[Math.floor(Math.random() * charset.length)];
 }
 
-function parseHTML(html: string): ParsedContent[] {
+function parseHTML(html: string): ParsedResult {
   /**
    * Improved HTML parser:
    * - Preserves leading/trailing whitespace
    * - Enhanced tag regex to match comments, CDATA, DOCTYPE, and self-closing tags
    * - Handles HTML entities
+   * - Caches character count during parsing
    *
    * Limitations: Does not fully parse nested tags, comments, CDATA, or DOCTYPE. For robust parsing, use a dedicated HTML parser library.
    */
   const array: ParsedContent[] = [];
+  let totalCharacters = 0;
+
   // Matches tags, comments, CDATA, DOCTYPE, and self-closing tags
   const tagRegex =
     /^(<\/?[a-zA-Z][^>]*>|<!--([\s\S]*?)-->|<!\[CDATA\[([\s\S]*?)\]\]>|<!DOCTYPE[^>]*>)/i;
@@ -104,6 +112,7 @@ function parseHTML(html: string): ParsedContent[] {
         type: "character",
         content: matchEntity[0],
       });
+      totalCharacters++;
       string = string.slice(matchEntity[0].length);
       continue;
     }
@@ -124,10 +133,11 @@ function parseHTML(html: string): ParsedContent[] {
       type: "character",
       content: string[0],
     });
+    totalCharacters++;
     string = string.slice(1);
   }
 
-  return array;
+  return { content: array, totalCharacters };
 }
 
 function createInitialState(
@@ -140,7 +150,7 @@ function createInitialState(
   return {
     element: el,
     originalHTML,
-    parsedContent: parseHTML(originalHTML),
+    parsedResult: parseHTML(originalHTML),
     options: mergeOptions(options),
     animationId: null,
     startTime: 0,
@@ -166,10 +176,11 @@ function stopAnimation(state: ShiverTextState): ShiverTextState {
 }
 
 function generateDisplayHTML(
-  parsedContent: ParsedContent[],
+  parsedResult: ParsedResult,
   elapsed: number,
   options: Required<ShiverTextOptions>
 ): { html: string; allComplete: boolean } {
+  const { content: parsedContent, totalCharacters } = parsedResult;
   const parsedContentLength = parsedContent.length;
   const htmlParts: string[] = [];
   let characterIndex = 0;
@@ -220,9 +231,6 @@ function generateDisplayHTML(
     }
   }
 
-  const totalCharacters = parsedContent.filter(
-    (item) => item.type === "character"
-  ).length;
   const allComplete = revealedCount === totalCharacters;
 
   return { html: htmlParts.join(""), allComplete };
@@ -236,7 +244,7 @@ function createAnimationLoop(stateRef: { current: ShiverTextState }) {
     const elapsed = currentTime - stateRef.current.startTime;
 
     const { html: displayHTML, allComplete } = generateDisplayHTML(
-      stateRef.current.parsedContent,
+      stateRef.current.parsedResult,
       elapsed,
       stateRef.current.options
     );
@@ -286,10 +294,10 @@ export function createShiverText(
   };
 
   const setText = (textOrHtml: string, autoStart: boolean = true): void => {
-    const parsedContent = parseHTML(textOrHtml);
+    const parsedResult = parseHTML(textOrHtml);
     stateRef.current = updateState(stateRef.current, {
       originalHTML: textOrHtml,
-      parsedContent,
+      parsedResult,
     });
     if (autoStart) {
       start();
