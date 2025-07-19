@@ -16,7 +16,7 @@ export interface ShiverTextOptions {
 export interface ShiverTextInstance {
   start: () => void;
   stop: () => void;
-  setText: (text: string, autoStart?: boolean) => void;
+  setText: (textOrHtml: string, autoStart?: boolean) => void;
 }
 
 interface ParsedContent {
@@ -68,21 +68,43 @@ function getRandomChar(charset: string): string {
 }
 
 function parseHTML(html: string): ParsedContent[] {
+  /**
+   * Improved HTML parser:
+   * - Preserves leading/trailing whitespace
+   * - Enhanced tag regex to match comments, CDATA, DOCTYPE, and self-closing tags
+   * - Handles HTML entities
+   *
+   * Limitations: Does not fully parse nested tags, comments, CDATA, or DOCTYPE. For robust parsing, use a dedicated HTML parser library.
+   */
   const array: ParsedContent[] = [];
-  const tagRegex = /^(\s*)?<\/?[a-z][^>]*>(\s*)?/i;
+  // Matches tags, comments, CDATA, DOCTYPE, and self-closing tags
+  const tagRegex =
+    /^(<\/?[a-zA-Z][^>]*>|<!--([\s\S]*?)-->|<!\[CDATA\[([\s\S]*?)\]\]>|<!DOCTYPE[^>]*>)/i;
+  // Matches HTML entities
+  const entityRegex = /^&[a-zA-Z0-9#]+;/;
+  // Matches whitespace
   const spaceRegex = /^\s+/;
 
-  let string = html.replace(/^\s+/, "").replace(/\s+$/, "");
+  let string = html;
 
   while (string.length !== 0) {
     const matchTag = string.match(tagRegex);
-
     if (matchTag) {
       array.push({
         type: "tag",
         content: matchTag[0],
       });
-      string = string.replace(matchTag[0], "");
+      string = string.slice(matchTag[0].length);
+      continue;
+    }
+
+    const matchEntity = string.match(entityRegex);
+    if (matchEntity) {
+      array.push({
+        type: "character",
+        content: matchEntity[0],
+      });
+      string = string.slice(matchEntity[0].length);
       continue;
     }
 
@@ -91,12 +113,13 @@ function parseHTML(html: string): ParsedContent[] {
     if (matchSpace) {
       array.push({
         type: "space",
-        content: " ",
+        content: matchSpace[0],
       });
-      string = string.replace(matchSpace[0], "");
+      string = string.slice(matchSpace[0].length);
       continue;
     }
 
+    // Single character fallback
     array.push({
       type: "character",
       content: string[0],
@@ -148,7 +171,7 @@ function generateDisplayHTML(
   options: Required<ShiverTextOptions>
 ): { html: string; allComplete: boolean } {
   const parsedContentLength = parsedContent.length;
-  let displayHTML = "";
+  const htmlParts: string[] = [];
   let characterIndex = 0;
   let revealedCount = 0;
 
@@ -169,21 +192,27 @@ function generateDisplayHTML(
   }
 
   // Second pass: build display HTML
+  /**
+   * SECURITY WARNING: The generated HTML is rendered using innerHTML.
+   * Only trusted HTML should be used. If you accept user-provided content,
+   * sanitize it before passing to shiver-text to prevent XSS vulnerabilities.
+   * Consider using a library like DOMPurify for sanitization.
+   */
   characterIndex = 0;
   for (let i = 0; i < parsedContentLength; i++) {
     const item = parsedContent[i];
     if (item.type === "tag" || item.type === "space") {
-      displayHTML += item.content;
+      htmlParts.push(item.content);
     } else if (item.type === "character") {
       const charStartTime = characterIndex * options.delay;
       const charElapsed = Math.max(0, elapsed - charStartTime);
 
       if (charElapsed >= options.duration) {
         // Character is fully revealed
-        displayHTML += item.content;
+        htmlParts.push(item.content);
       } else if (characterIndex < revealedCount + options.scrambleRange) {
         // Character is within the scrambling window
-        displayHTML += getRandomChar(options.charset);
+        htmlParts.push(getRandomChar(options.charset));
       }
       // Characters beyond the window are not added
 
@@ -196,7 +225,7 @@ function generateDisplayHTML(
   ).length;
   const allComplete = revealedCount === totalCharacters;
 
-  return { html: displayHTML, allComplete };
+  return { html: htmlParts.join(""), allComplete };
 }
 
 function createAnimationLoop(stateRef: { current: ShiverTextState }) {
@@ -212,6 +241,11 @@ function createAnimationLoop(stateRef: { current: ShiverTextState }) {
       stateRef.current.options
     );
 
+    /**
+     * SECURITY WARNING: Rendering with innerHTML can expose your app to XSS attacks
+     * if untrusted HTML is passed. Always sanitize user-provided content before rendering.
+     * Consider using a library like DOMPurify, or a safer rendering method for untrusted content.
+     */
     stateRef.current.element.innerHTML = displayHTML;
     stateRef.current.options.onUpdate(displayHTML);
 
@@ -251,10 +285,10 @@ export function createShiverText(
     stateRef.current = stopAnimation(stateRef.current);
   };
 
-  const setText = (text: string, autoStart: boolean = true): void => {
-    const parsedContent = parseHTML(text);
+  const setText = (textOrHtml: string, autoStart: boolean = true): void => {
+    const parsedContent = parseHTML(textOrHtml);
     stateRef.current = updateState(stateRef.current, {
-      originalHTML: text,
+      originalHTML: textOrHtml,
       parsedContent,
     });
     if (autoStart) {
