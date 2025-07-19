@@ -19,9 +19,15 @@ export interface ShiverTextInstance {
   setText: (text: string, autoStart?: boolean) => void;
 }
 
+interface ParsedContent {
+  type: "tag" | "space" | "character";
+  content: string;
+}
+
 interface ShiverTextState {
   element: HTMLElement;
-  originalText: string;
+  originalHTML: string;
+  parsedContent: ParsedContent[];
   options: Required<ShiverTextOptions>;
   animationId: number | null;
   startTime: number;
@@ -61,14 +67,57 @@ function getRandomChar(charset: string): string {
   return charset[Math.floor(Math.random() * charset.length)];
 }
 
+function parseHTML(html: string): ParsedContent[] {
+  const array: ParsedContent[] = [];
+  const tagRegex = /^(\s*)?<\/?[a-z][^>]*>(\s*)?/i;
+  const spaceRegex = /^\s+/;
+
+  let string = html.replace(/^\s+/, "").replace(/\s+$/, "");
+
+  while (string.length !== 0) {
+    const matchTag = string.match(tagRegex);
+
+    if (matchTag) {
+      array.push({
+        type: "tag",
+        content: matchTag[0],
+      });
+      string = string.replace(matchTag[0], "");
+      continue;
+    }
+
+    const matchSpace = string.match(spaceRegex);
+
+    if (matchSpace) {
+      array.push({
+        type: "space",
+        content: " ",
+      });
+      string = string.replace(matchSpace[0], "");
+      continue;
+    }
+
+    array.push({
+      type: "character",
+      content: string[0],
+    });
+    string = string.slice(1);
+  }
+
+  return array;
+}
+
 function createInitialState(
   element: HTMLElement | string,
   options: ShiverTextOptions = {}
 ): ShiverTextState {
   const el = createElement(element);
+  const originalHTML = el.innerHTML;
+
   return {
     element: el,
-    originalText: el.textContent ?? "",
+    originalHTML,
+    parsedContent: parseHTML(originalHTML),
     options: mergeOptions(options),
     animationId: null,
     startTime: 0,
@@ -93,57 +142,58 @@ function stopAnimation(state: ShiverTextState): ShiverTextState {
   });
 }
 
-function generateDisplayText(
-  originalText: string,
+function generateDisplayHTML(
+  parsedContent: ParsedContent[],
   elapsed: number,
   options: Required<ShiverTextOptions>
-): { text: string; allComplete: boolean } {
-  let displayText = "";
+): { html: string; allComplete: boolean } {
+  let displayHTML = "";
+  let characterIndex = 0;
   let revealedCount = 0;
 
-  // First pass: count how many characters are fully revealed
-  for (let i = 0, len = originalText.length; i < len; i++) {
-    const char = originalText[i];
+  // First pass: count revealed characters
+  for (const item of parsedContent) {
+    if (item.type === "character") {
+      const charStartTime = characterIndex * options.delay;
+      const charElapsed = Math.max(0, elapsed - charStartTime);
 
-    if (char === " ") {
-      revealedCount++;
-      continue;
-    }
-
-    const charStartTime = i * options.delay;
-    const charElapsed = Math.max(0, elapsed - charStartTime);
-
-    if (charElapsed >= options.duration) {
-      revealedCount++;
-    } else {
-      break; // Stop counting once we hit an unrevealed character
+      if (charElapsed >= options.duration) {
+        revealedCount++;
+      } else {
+        break;
+      }
+      characterIndex++;
     }
   }
 
-  // Second pass: build the display text
-  for (let i = 0, len = originalText.length; i < len; i++) {
-    const char = originalText[i];
+  // Second pass: build display HTML
+  characterIndex = 0;
+  for (const item of parsedContent) {
+    if (item.type === "tag" || item.type === "space") {
+      displayHTML += item.content;
+    } else if (item.type === "character") {
+      const charStartTime = characterIndex * options.delay;
+      const charElapsed = Math.max(0, elapsed - charStartTime);
 
-    if (char === " ") {
-      displayText += " ";
-      continue;
+      if (charElapsed >= options.duration) {
+        // Character is fully revealed
+        displayHTML += item.content;
+      } else if (characterIndex < revealedCount + options.scrambleRange) {
+        // Character is within the scrambling window
+        displayHTML += getRandomChar(options.charset);
+      }
+      // Characters beyond the window are not added
+
+      characterIndex++;
     }
-
-    const charStartTime = i * options.delay;
-    const charElapsed = Math.max(0, elapsed - charStartTime);
-
-    if (charElapsed >= options.duration) {
-      // Character is fully revealed
-      displayText += char;
-    } else if (i < revealedCount + options.scrambleRange) {
-      // Character is within the scrambling window
-      displayText += getRandomChar(options.charset);
-    }
-    // Characters beyond the window are not added (effectively empty)
   }
 
-  const allComplete = revealedCount === originalText.length;
-  return { text: displayText, allComplete };
+  const totalCharacters = parsedContent.filter(
+    (item) => item.type === "character"
+  ).length;
+  const allComplete = revealedCount === totalCharacters;
+
+  return { html: displayHTML, allComplete };
 }
 
 function createAnimationLoop(stateRef: { current: ShiverTextState }) {
@@ -153,14 +203,14 @@ function createAnimationLoop(stateRef: { current: ShiverTextState }) {
     const currentTime = performance.now();
     const elapsed = currentTime - stateRef.current.startTime;
 
-    const { text: displayText, allComplete } = generateDisplayText(
-      stateRef.current.originalText,
+    const { html: displayHTML, allComplete } = generateDisplayHTML(
+      stateRef.current.parsedContent,
       elapsed,
       stateRef.current.options
     );
 
-    stateRef.current.element.textContent = displayText;
-    stateRef.current.options.onUpdate(displayText);
+    stateRef.current.element.innerHTML = displayHTML;
+    stateRef.current.options.onUpdate(displayHTML);
 
     if (allComplete) {
       stateRef.current = updateState(stateRef.current, { isAnimating: false });
@@ -199,7 +249,11 @@ export function createShiverText(
   };
 
   const setText = (text: string, autoStart: boolean = true): void => {
-    stateRef.current = updateState(stateRef.current, { originalText: text });
+    const parsedContent = parseHTML(text);
+    stateRef.current = updateState(stateRef.current, {
+      originalHTML: text,
+      parsedContent,
+    });
     if (autoStart) {
       start();
     }
