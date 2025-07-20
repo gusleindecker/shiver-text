@@ -30,7 +30,6 @@
         font-size: 1.2rem;
         margin: 20px 0;
         min-height: 2.5rem;
-        font-family: monospace;
       }
 
       .demo-text__link {
@@ -56,7 +55,7 @@
         font-size: 1.4rem;
       }
 
-      button {
+      button[type="button"] {
         background: #4caf50;
         color: white;
         padding: 10px 20px;
@@ -83,8 +82,6 @@
       code {
         font-family: monospace;
         padding: 2px 4px;
-        border-radius: 5px;
-        background: #333;
       }
 
       .config-display {
@@ -104,7 +101,7 @@
     <div class="demo-section">
       <h2>Basic Example</h2>
       <div id="demo1" class="demo-text">Hello World!</div>
-      <button onclick="startDemo1()">Start Animation</button>
+      <button type="button" onclick="startDemo1()">Start Animation</button>
       <div class="config-display">
         Default settings: duration: 60ms, delay: 40ms, scrambleRange: 3
       </div>
@@ -121,7 +118,9 @@
           >here</a
         >!
       </div>
-      <button onclick="startDemo2()">Start Slower Animation</button>
+      <button type="button" onclick="startDemo2()">
+        Start Slower Animation
+      </button>
       <div class="config-display">
         Slower settings: duration: 100ms, delay: 60ms, custom charset
       </div>
@@ -130,7 +129,9 @@
     <div class="demo-section">
       <h2>Matrix-Style Effect</h2>
       <div id="demo3" class="demo-text matrix-text">WELCOME TO THE MATRIX</div>
-      <button onclick="startMatrixDemo()">Start Matrix Effect</button>
+      <button type="button" onclick="startMatrixDemo()">
+        Start Matrix Effect
+      </button>
       <div class="config-display">
         Matrix config: charset: "0123456789", duration: 80ms, delay: 30ms,
         scrambleRange: 5
@@ -140,7 +141,9 @@
     <div class="demo-section">
       <h2>Minimal Scramble</h2>
       <div id="demo4" class="demo-text">Quick and clean animation</div>
-      <button onclick="startMinimalDemo()">Start Minimal Scramble</button>
+      <button type="button" onclick="startMinimalDemo()">
+        Start Minimal Scramble
+      </button>
       <div class="config-display">
         Minimal config: scrambleRange: 1, duration: 40ms, delay: 20ms
       </div>
@@ -149,7 +152,9 @@
     <div class="demo-section">
       <h2>Cyberpunk Style</h2>
       <div id="demo5" class="demo-text cyberpunk-text">CYBER_PUNK_2077</div>
-      <button onclick="startCyberpunkDemo()">Start Cyberpunk Effect</button>
+      <button type="button" onclick="startCyberpunkDemo()">
+        Start Cyberpunk Effect
+      </button>
       <div class="config-display">
         Cyberpunk config: charset: "█▉▊▋▌▍▎▏", duration: 100ms, delay: 50ms
       </div>
@@ -160,7 +165,9 @@
       <div id="demo6" class="demo-text typewriter-text">
         Once upon a time...
       </div>
-      <button onclick="startTypewriterDemo()">Start Typewriter Effect</button>
+      <button type="button" onclick="startTypewriterDemo()">
+        Start Typewriter Effect
+      </button>
       <div class="config-display">
         Typewriter config: duration: 200ms, delay: 120ms, scrambleRange: 2
       </div>
@@ -169,8 +176,10 @@
     <div class="demo-section">
       <h2>Dynamic Text Change</h2>
       <div id="demo7" class="demo-text"></div>
-      <button onclick="changeText()">Change Text</button>
-      <button onclick="stopAllAnimations()" class="secondary">Stop All</button>
+      <button type="button" onclick="changeText()">Change Text</button>
+      <button type="button" onclick="stopAllAnimations()" class="secondary">
+        Stop All
+      </button>
       <div class="config-display">
         Click "Change Text" to see setText() in action
       </div>
