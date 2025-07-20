@@ -46,17 +46,17 @@
   },
   "homepage": "https://github.com/gusleindecker/shiver-text#readme",
   "devDependencies": {
-    "@eslint/js": "^9.28.0",
+    "@eslint/js": "^9.31.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^12.1.2",
+    "@rollup/plugin-typescript": "^12.1.4",
     "eslint": "^9.28.0",
-    "prettier": "^3.5.3",
-    "rollup": "^4.42.0",
+    "prettier": "^3.6.2",
+    "rollup": "^4.45.1",
     "rollup-plugin-dts": "^6.2.1",
     "tslib": "^2.6.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.34.0"
+    "typescript-eslint": "^8.37.0"
   },
   "engines": {
     "node": ">=14.0.0"
