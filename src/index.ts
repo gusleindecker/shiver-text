@@ -1,43 +1,10 @@
-export interface ShiverTextOptions {
-  /** Duration for each character to settle (ms) */
-  duration?: number;
-  /** Characters to use for shuffling */
-  charset?: string;
-  /** Delay between each character starting (ms) */
-  delay?: number;
-  /** Number of characters to scramble after the last revealed one */
-  scrambleRange?: number;
-  /** Callback when animation completes */
-  onComplete?: () => void;
-  /** Callback on each frame update */
-  onUpdate?: (text: string) => void;
-}
-
-export interface ShiverTextInstance {
-  start: () => void;
-  stop: () => void;
-  setText: (textOrHtml: string, autoStart?: boolean) => void;
-}
-
-interface ParsedContent {
-  type: "tag" | "space" | "character";
-  content: string;
-}
-
-interface ParsedResult {
-  content: ParsedContent[];
-  totalCharacters: number;
-}
-
-interface ShiverTextState {
-  element: HTMLElement;
-  originalHTML: string;
-  parsedResult: ParsedResult;
-  options: Required<ShiverTextOptions>;
-  animationId: number | null;
-  startTime: number;
-  isAnimating: boolean;
-}
+import type {
+  ShiverTextInstance,
+  ShiverTextOptions,
+  ShiverTextParsedContent,
+  ShiverTextParsedResult,
+  ShiverTextState,
+} from "./types";
 
 const defaultOptions: Required<ShiverTextOptions> = {
   duration: 60,
@@ -57,7 +24,7 @@ function createElement(element: HTMLElement | string): HTMLElement {
 
   if (!el) {
     throw new Error(
-      "Element not found! You need to provide an element that exists in your HTML for shiver-text to work."
+      "Element not found! You need to provide an element that exists in your HTML for shiver-text to work.",
     );
   }
 
@@ -72,7 +39,7 @@ function getRandomChar(charset: string): string {
   return charset[Math.floor(Math.random() * charset.length)];
 }
 
-function parseHTML(html: string): ParsedResult {
+function parseHTML(html: string): ShiverTextParsedResult {
   /**
    * Improved HTML parser:
    * - Preserves leading/trailing whitespace
@@ -82,7 +49,7 @@ function parseHTML(html: string): ParsedResult {
    *
    * Limitations: Does not fully parse nested tags, comments, CDATA, or DOCTYPE. For robust parsing, use a dedicated HTML parser library.
    */
-  const array: ParsedContent[] = [];
+  const array: ShiverTextParsedContent[] = [];
   let totalCharacters = 0;
 
   // Matches tags, comments, CDATA, DOCTYPE, and self-closing tags
@@ -142,7 +109,7 @@ function parseHTML(html: string): ParsedResult {
 
 function createInitialState(
   element: HTMLElement | string,
-  options: ShiverTextOptions = {}
+  options: ShiverTextOptions = {},
 ): ShiverTextState {
   const el = createElement(element);
   const originalHTML = el.innerHTML;
@@ -160,7 +127,7 @@ function createInitialState(
 
 function updateState<K extends keyof ShiverTextState>(
   state: ShiverTextState,
-  updates: Pick<ShiverTextState, K>
+  updates: Pick<ShiverTextState, K>,
 ): ShiverTextState {
   return { ...state, ...updates };
 }
@@ -176,9 +143,9 @@ function stopAnimation(state: ShiverTextState): ShiverTextState {
 }
 
 function generateDisplayHTML(
-  parsedResult: ParsedResult,
+  parsedResult: ShiverTextParsedResult,
   elapsed: number,
-  options: Required<ShiverTextOptions>
+  options: Required<ShiverTextOptions>,
 ): { html: string; allComplete: boolean } {
   const { content: parsedContent, totalCharacters } = parsedResult;
   const parsedContentLength = parsedContent.length;
@@ -246,7 +213,7 @@ function createAnimationLoop(stateRef: { current: ShiverTextState }) {
     const { html: displayHTML, allComplete } = generateDisplayHTML(
       stateRef.current.parsedResult,
       elapsed,
-      stateRef.current.options
+      stateRef.current.options,
     );
 
     /**
@@ -271,7 +238,7 @@ function createAnimationLoop(stateRef: { current: ShiverTextState }) {
 
 export function createShiverText(
   element: HTMLElement | string,
-  options: ShiverTextOptions = {}
+  options: ShiverTextOptions = {},
 ): ShiverTextInstance {
   const stateRef = { current: createInitialState(element, options) };
   const animate = createAnimationLoop(stateRef);
