@@ -141,7 +141,7 @@ describe("index.ts", () => {
       instance.start();
 
       expect(vi.mocked(performance.now).mock.calls.length).toBeGreaterThan(
-        firstCallCount
+        firstCallCount,
       );
     });
 
