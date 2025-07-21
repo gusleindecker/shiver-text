@@ -2,19 +2,24 @@
 
 [![Latest NPM release](https://img.shields.io/npm/v/shiver-text.svg)](https://www.npmjs.com/package/shiver-text)
 ![MIT License](https://img.shields.io/npm/l/shiver-text.svg)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/shiver-text)
 
-A small library (6kb gzipped) written in TypeScript for creating a smooth shiver-shuffling animation for your text. Perfect for creating engaging text reveals with a cyberpunk/glitch feel.
+A small library written in TypeScript for creating a smooth shiver-shuffling animation for your text. Perfect for creating engaging text reveals with a cyberpunk/glitch feel.
 
 ![Shiver Text Animation Demo](shiver-text.gif)
 
 ## Features
 
-- 🎯 **Smooth Animations**: Buttery smooth 60fps animations using `requestAnimationFrame`
+- 🎯 **Smooth Animations**: Optimized 60fps animations using `requestAnimationFrame`
 - 🔤 **Letter-by-letter Reveal**: Text reveals progressively from left to right
 - ⚡ **Fast & Lightweight**: No dependencies, minimal footprint
 - 🎨 **Customizable**: Control timing, characters, and animation behavior
 - 📱 **Framework Agnostic**: Works with vanilla JS, React, Vue, Angular, etc.
 - 🦾 **TypeScript**: Full type safety and IntelliSense support
+
+## How It Works
+
+Shiver Text creates a typewriter-style animation where characters are revealed one by one from left to right, while a few characters ahead scramble using random characters. HTML tags and entities are preserved during the animation.
 
 ## Installation
 
@@ -40,39 +45,81 @@ shiverInstance.start();
 ### Basic Usage (Vanilla JS with a `<script>` tag)
 
 ```html
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Shiver Text UMD Test</title>
-  </head>
-  <body>
-    <h1>Shiver Text UMD Demo</h1>
+<!-- Import shiver-text UMD build -->
+<script src="https://cdn.jsdelivr.net/npm/shiver-text@latest/dist/index.js"></script>
+<script>
+  // ShiverText is available globally
+  const shiverInstance = ShiverText.createShiverText("#my-element");
+  shiverInstance.start();
+</script>
+```
 
-    <div id="demo1">Hello World!</div>
-    <button onclick="startDemo1()">Start Animation</button>
+For complete examples with different configurations, see the [examples/](examples/) folder.
 
-    <div id="demo2">Welcome to the matrix...</div>
-    <button onclick="startDemo2()">Slower Animation</button>
+### Preventing XSS: Using DOMPurify with shiver-text
 
-    <div id="demo3"></div>
-    <button onclick="changeText()">Change Text</button>
+When rendering user-provided HTML, always sanitize it before passing to shiver-text to prevent XSS vulnerabilities. Here is an example using [DOMPurify](https://github.com/cure53/DOMPurify):
 
-    <!-- Import shiver-text UMD build in your HTML -->
-    <script src="https://cdn.jsdelivr.net/npm/shiver-text@latest/dist/index.js"></script>
-    <script>
-      // ShiverText is available globally
+```js
+import DOMPurify from "dompurify";
+import { createShiverText } from "shiver-text";
 
-      const shiverTextInstance = ShiverText.createShiverText("#my-element", {
-        duration: 100,
-        delay: 60,
-        charset: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*",
-      });
-      shiverTextInstance.start();
-    </script>
-  </body>
-</html>
+// Example: user-provided HTML
+const userInput = '<span onclick="alert(1)">Hello <b>world</b>!</span>';
+
+// Sanitize the input
+const safeHTML = DOMPurify.sanitize(userInput);
+
+// Pass the sanitized HTML to shiver-text
+const shiver = createShiverText("#target-element");
+shiver.setText(safeHTML);
+```
+
+This ensures only safe HTML is rendered and prevents malicious scripts from executing.
+
+## Configuration Examples
+
+### Matrix-Style Effect
+
+```javascript
+createShiverText("#element", {
+  charset: "0123456789", // Numbers only
+  duration: 80,
+  delay: 30,
+  scrambleRange: 5,
+});
+```
+
+### Minimal Scramble
+
+```javascript
+createShiverText("#element", {
+  scrambleRange: 1, // Only scramble 1 character ahead
+  duration: 40, // Faster reveal
+  delay: 20,
+});
+```
+
+### Custom Character Set
+
+```javascript
+createShiverText("#element", {
+  charset: "█▉▊▋▌▍▎▏", // Block characters for cyberpunk feel
+  duration: 100,
+  delay: 50,
+  scrambleRange: 3,
+});
+```
+
+### Slow Typewriter
+
+```javascript
+createShiverText("#element", {
+  charset: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  duration: 200, // Longer settling time
+  delay: 120, // More delay between characters
+  scrambleRange: 2,
+});
 ```
 
 ## API Reference
@@ -204,14 +251,12 @@ onMounted(() => {
 
 ## Browser Support
 
-This library is compiled to ES2020 JavaScript, making it compatible with a wide range of modern browsers, including:
+This library is compiled to ES2020 JavaScript, compatible with:
 
 - Chrome >= 80
 - Firefox >= 74
 - Safari >= 13.1
 - Edge >= 80
-
-The animation relies on `requestAnimationFrame`, which is broadly supported in all modern browsers.
 
 ## License
 

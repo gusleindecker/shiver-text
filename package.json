@@ -1,6 +1,6 @@
 {
   "name": "shiver-text",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "A small library (6kb gzipped) written in TypeScript for creating a smooth shiver-shuffling animation for your text.",
   "main": "dist/index.js",
@@ -20,11 +20,14 @@
   ],
   "scripts": {
     "build": "rollup -c",
+    "clean": "rimraf dist",
     "dev": "rollup -c --watch",
-    "prepublishOnly": "npm run build",
-    "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "clean": "rm -rf dist"
+    "lint": "eslint src --ext .ts",
+    "prepublishOnly": "npm run build",
+    "test:unit": "vitest run",
+    "test:unit:coverage": "vitest run --coverage",
+    "test:unit:watch": "vitest"
   },
   "keywords": [
     "text",
@@ -46,17 +49,20 @@
   },
   "homepage": "https://github.com/gusleindecker/shiver-text#readme",
   "devDependencies": {
-    "@eslint/js": "^9.28.0",
+    "@eslint/js": "^9.31.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^12.1.2",
+    "@rollup/plugin-typescript": "^12.1.4",
+    "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.28.0",
-    "prettier": "^3.5.3",
-    "rollup": "^4.42.0",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.45.1",
     "rollup-plugin-dts": "^6.2.1",
     "tslib": "^2.6.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.34.0"
+    "typescript-eslint": "^8.38.0",
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=14.0.0"

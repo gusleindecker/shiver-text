@@ -12,40 +12,178 @@
         color: #fff;
       }
 
+      .demo-section {
+        margin-bottom: 40px;
+        border: 1px solid #333;
+        padding: 20px;
+        border-radius: 8px;
+        background: #2a2a2a;
+      }
+
+      .demo-section h2 {
+        color: #4caf50;
+        margin-top: 0;
+        font-size: 1.4rem;
+      }
+
       .demo-text {
-        font-size: 2rem;
+        font-size: 1.2rem;
         margin: 20px 0;
-        font-weight: bold;
         min-height: 2.5rem;
       }
 
-      button {
+      .demo-text__link {
+        color: #fff;
+      }
+
+      .matrix-text {
+        color: #00ff00;
+        font-family: "Courier New", monospace;
+        font-weight: bold;
+      }
+
+      .cyberpunk-text {
+        color: #ff0080;
+        font-family: monospace;
+        font-weight: bold;
+        text-shadow: 0 0 10px #ff0080;
+      }
+
+      .typewriter-text {
+        color: #ffcc00;
+        font-family: "Times New Roman", serif;
+        font-size: 1.4rem;
+      }
+
+      button[type="button"] {
         background: #4caf50;
         color: white;
         padding: 10px 20px;
         border: none;
         border-radius: 4px;
         cursor: pointer;
-        margin: 10px;
+        margin-bottom: 10px;
+        margin-right: 10px;
         font-size: 16px;
       }
 
       button:hover {
         background: #45a049;
       }
+
+      button.secondary {
+        background: #2196f3;
+      }
+
+      button.secondary:hover {
+        background: #1976d2;
+      }
+
+      code {
+        font-family: monospace;
+        padding: 2px 4px;
+      }
+
+      .config-display {
+        background: #333;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.9rem;
+        margin: 10px 0;
+        color: #ccc;
+      }
     </style>
   </head>
   <body>
     <h1>Shiver Text UMD Demo</h1>
 
-    <div id="demo1" class="demo-text">Hello World!</div>
-    <button onclick="startDemo1()">Start Animation</button>
+    <div class="demo-section">
+      <h2>Basic Example</h2>
+      <div id="demo1" class="demo-text">Hello World!</div>
+      <button type="button" onclick="startDemo1()">Start Animation</button>
+      <div class="config-display">
+        Default settings: duration: 60ms, delay: 40ms, scrambleRange: 3
+      </div>
+    </div>
 
-    <div id="demo2" class="demo-text">Welcome to the matrix...</div>
-    <button onclick="startDemo2()">Slower Animation</button>
+    <div class="demo-section">
+      <h2>HTML Content Support</h2>
+      <div id="demo2" class="demo-text">
+        Do you know the story behind <code>shiver-text</code>? Read it
+        <a
+          class="demo-text__link"
+          href="https://medium.com/@gustalp/from-a-flickering-idea-to-my-first-public-npm-package-the-story-of-shiver-text-bdd8f9773763"
+          target="_blank"
+          >here</a
+        >!
+      </div>
+      <button type="button" onclick="startDemo2()">
+        Start Slower Animation
+      </button>
+      <div class="config-display">
+        Slower settings: duration: 100ms, delay: 60ms, custom charset
+      </div>
+    </div>
 
-    <div id="demo3" class="demo-text"></div>
-    <button onclick="changeText()">Change Text</button>
+    <div class="demo-section">
+      <h2>Matrix-Style Effect</h2>
+      <div id="demo3" class="demo-text matrix-text">WELCOME TO THE MATRIX</div>
+      <button type="button" onclick="startMatrixDemo()">
+        Start Matrix Effect
+      </button>
+      <div class="config-display">
+        Matrix config: charset: "0123456789", duration: 80ms, delay: 30ms,
+        scrambleRange: 5
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>Minimal Scramble</h2>
+      <div id="demo4" class="demo-text">Quick and clean animation</div>
+      <button type="button" onclick="startMinimalDemo()">
+        Start Minimal Scramble
+      </button>
+      <div class="config-display">
+        Minimal config: scrambleRange: 1, duration: 40ms, delay: 20ms
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>Cyberpunk Style</h2>
+      <div id="demo5" class="demo-text cyberpunk-text">CYBER_PUNK_2077</div>
+      <button type="button" onclick="startCyberpunkDemo()">
+        Start Cyberpunk Effect
+      </button>
+      <div class="config-display">
+        Cyberpunk config: charset: "█▉▊▋▌▍▎▏", duration: 100ms, delay: 50ms
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>Slow Typewriter</h2>
+      <div id="demo6" class="demo-text typewriter-text">
+        Once upon a time...
+      </div>
+      <button type="button" onclick="startTypewriterDemo()">
+        Start Typewriter Effect
+      </button>
+      <div class="config-display">
+        Typewriter config: duration: 200ms, delay: 120ms, scrambleRange: 2
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>Dynamic Text Change</h2>
+      <div id="demo7" class="demo-text"></div>
+      <button type="button" onclick="changeText()">Change Text</button>
+      <button type="button" onclick="stopAllAnimations()" class="secondary">
+        Stop All
+      </button>
+      <div class="config-display">
+        Click "Change Text" to see setText() in action
+      </div>
+    </div>
 
     <!-- Import your UMD build -->
     <script src="../dist/index.js"></script>
@@ -54,14 +192,59 @@
       console.log("ShiverText:", typeof ShiverText); // ShiverText available: object
       console.log("createShiverText:", typeof ShiverText.createShiverText); // createShiverText: function
 
-      // Create instances
+      // Create instances with different configurations
       const shiverInstance1 = ShiverText.createShiverText("#demo1");
+
       const shiverInstance2 = ShiverText.createShiverText("#demo2", {
         duration: 100,
         delay: 60,
         charset: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*",
       });
-      const shiverInstance3 = ShiverText.createShiverText("#demo3");
+
+      // Matrix-style effect
+      const matrixInstance = ShiverText.createShiverText("#demo3", {
+        charset: "0123456789",
+        duration: 80,
+        delay: 30,
+        scrambleRange: 5,
+      });
+
+      // Minimal scramble
+      const minimalInstance = ShiverText.createShiverText("#demo4", {
+        scrambleRange: 1,
+        duration: 40,
+        delay: 20,
+      });
+
+      // Cyberpunk style
+      const cyberpunkInstance = ShiverText.createShiverText("#demo5", {
+        charset: "█▉▊▋▌▍▎▏",
+        duration: 100,
+        delay: 50,
+        scrambleRange: 3,
+      });
+
+      // Slow typewriter
+      const typewriterInstance = ShiverText.createShiverText("#demo6", {
+        charset: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        duration: 200,
+        delay: 120,
+        scrambleRange: 2,
+      });
+
+      // Dynamic text changer
+      const dynamicInstance = ShiverText.createShiverText("#demo7");
+
+      // Store all instances for easy management
+      const allInstances = [
+        shiverInstance1,
+        shiverInstance2,
+        matrixInstance,
+        minimalInstance,
+        cyberpunkInstance,
+        typewriterInstance,
+        dynamicInstance,
+      ];
 
       // Demo functions
       function startDemo1() {
@@ -72,16 +255,46 @@
         shiverInstance2.start();
       }
 
+      function startMatrixDemo() {
+        matrixInstance.start();
+      }
+
+      function startMinimalDemo() {
+        minimalInstance.start();
+      }
+
+      function startCyberpunkDemo() {
+        cyberpunkInstance.start();
+      }
+
+      function startTypewriterDemo() {
+        typewriterInstance.start();
+      }
+
       function changeText() {
         const texts = [
           "JavaScript is awesome!",
-          "TypeScript rocks!",
-          "Web development is fun!",
-          "Shiver text effect!",
+          "TypeScript rocks! 🚀",
+          "Web development is fun! ✨",
+          "Shiver text effect! ⚡",
+          "<strong>HTML</strong> works too!",
+          "Matrix: <code>01010011</code>",
+          "Loading... <em>please wait</em>",
         ];
         const randomText = texts[Math.floor(Math.random() * texts.length)];
-        shiverInstance3.setText(randomText);
+        dynamicInstance.setText(randomText);
       }
+
+      function stopAllAnimations() {
+        allInstances.forEach((instance) => instance.stop());
+      }
+
+      // Auto-start the first demo after page load
+      window.addEventListener("load", () => {
+        setTimeout(() => {
+          shiverInstance1.start();
+        }, 500);
+      });
     </script>
   </body>
 </html>
