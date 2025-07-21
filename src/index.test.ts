@@ -59,7 +59,7 @@ describe("index.ts", () => {
       vi.mocked(document.querySelector).mockReturnValue(null);
 
       expect(() => createShiverText("#invalid")).toThrow(
-        "Element not found! You need to provide an element that exists in your HTML for shiver-text to work."
+        "Element not found! You need to provide an element that exists in your HTML for shiver-text to work.",
       );
     });
   });
