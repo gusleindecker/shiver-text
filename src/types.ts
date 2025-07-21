@@ -14,8 +14,11 @@ export interface ShiverTextOptions {
 }
 
 export interface ShiverTextInstance {
+  /** Start the shiver animation */
   start: () => void;
+  /** Stop the current animation */
   stop: () => void;
+  /** Set new text and optionally start animation (autoStart defaults to true) */
   setText: (textOrHtml: string, autoStart?: boolean) => void;
 }
 
